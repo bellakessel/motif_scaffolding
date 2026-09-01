@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "motifgo"
+version = "0.1.0"
+description = "Motif-scaffolding benchmark: motif definition, contig grammar, AF3 refold scoring."
+requires-python = ">=3.10"
+# Declared so the repo is honest about what it needs. INSTALL WITH --no-deps into an environment
+# that already has them (see README): letting pip resolve these can silently upgrade biotite or
+# numpy underneath a working pipeline.
+dependencies = ["numpy", "scipy", "biotite"]
+
+[project.optional-dependencies]
+analysis = ["pandas", "matplotlib", "seaborn", "scikit-learn", "PyYAML"]
+
+[tool.setuptools]
+packages = ["motifgo"]          # flat layout: the package sits at the repo top level, beside scripts/

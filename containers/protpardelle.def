@@ -1,0 +1,34 @@
+Bootstrap: docker
+From: pytorch/pytorch:2.6.0-cuda12.4-cudnn9-runtime
+
+# Protpardelle-1c generation container (bekessel), mirrors genie3.def / proteina.def / la-proteina.def:
+# pytorch base at the model's pinned torch (>=2.6, cu124) + PURE-PIP deps (pyproject.toml — NO compiled PyG,
+# unlike Proteina/La-Proteina), and the Protpardelle source is BIND-MOUNTED at run time (PYTHONPATH=<repo>/src),
+# never installed, so a re-clone/edit needs no rebuild. Generation-only: we run --num-mpnn-seqs 0, so ESMFold /
+# ProteinMPNN / LigandMPNN / Foldseek (Protpardelle's own evaluation deps) are NOT installed — the shared
+# MPNN->AF3 downstream scores every method identically.
+%post
+    set -eux
+    export PIP_NO_CACHE_DIR=1
+    export DEBIAN_FRONTEND=noninteractive
+    # prody (and a couple of other deps) build C extensions from source -> need a compiler in the image.
+    apt-get update && apt-get install -y --no-install-recommends gcc g++ && rm -rf /var/lib/apt/lists/*
+    python -m pip install --upgrade pip
+    # deps from pyproject.toml [project.dependencies] minus torch (in the base image) and jupyter (unneeded).
+    python -m pip install \
+        biopython biotite dm-tree einops huggingface_hub hydra-core jaxtyping \
+        ml_collections modelcif numpy omegaconf pandas prody pyyaml scipy tqdm \
+        transformers typer wandb
+
+%test
+    # a loaded host python module (e.g. Euler's python-cuda) exports PYTHONHOME/PYTHONPATH that leak into this
+    # in-container python and send it to the HOST stdlib -> "No module named 'encodings'". Unset them so the
+    # container uses its own python (same reason the generate sbatch unsets them at run time).
+    unset PYTHONHOME PYTHONPATH
+    # source is bind-mounted at run time, so we can only check the third-party stack imports here.
+    python -c "import torch, hydra, typer, biotite, prody, modelcif, omegaconf; print('protpardelle deps OK', torch.__version__)"
+
+%runscript
+    # convenience: `singularity run protpardelle.sif <sampling_yaml> --motif-dir ...` (needs PYTHONPATH=<repo>/src
+    # + the model_params env vars set by protpardelle_generate.sbatch). Normally invoked via that sbatch.
+    exec python -m protpardelle.sample "$@"

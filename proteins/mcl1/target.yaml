@@ -1,0 +1,13 @@
+# MCL-1 (NMR, residues 171-327), all-alpha. No antibody complex available -> no binding validation
+# for these motifs; they contribute helix coverage only.
+target: mcl1
+pdb: /cluster/work/wicky/bekessel/pdbs/2mhs.pdb
+chain: A
+
+# --- motif definition (Lisa-consistent) ---
+motif_source: sasa
+rsa_cutoff: 0.20
+neighborhood_cutoff: 7.0
+neighborhood_metric: ca
+emit_filled: true               # also emit matched reduce_disjoint (contiguous) variant per motif
+gap_merge: 4                    # fill sequence gaps <= this many residues for the 'filled' variant

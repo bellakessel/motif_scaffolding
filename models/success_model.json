@@ -1,0 +1,202 @@
+{
+  "cont_features": [
+    "disjointed_parts",
+    "motif_length",
+    "mean_rsa"
+  ],
+  "final_features": [
+    "disjointed_parts_z",
+    "motif_length_z",
+    "len_x_disj",
+    "H",
+    "E",
+    "mean_rsa_z"
+  ],
+  "gates": {
+    "motif_rmsd_max": 1.0,
+    "rank_min": 0.75,
+    "sc_rmsd_max": 2.0
+  },
+  "meta": {
+    "backend": "statsmodels",
+    "costs": [
+      "/cluster/work/wicky/bekessel/motif_library/runs/lib_interface_pad5/compute_costs.csv",
+      "/cluster/work/wicky/bekessel/motif_library/runs/lib_interface_pad5_uidx/compute_costs.csv"
+    ],
+    "fitted": "2026-09-01T20:57:06",
+    "nsamples": 100,
+    "outcomes": "/cluster/work/wicky/bekessel/motif_benchmark/models/outcomes.csv",
+    "pool": "/cluster/work/wicky/bekessel/motif_library/motif_pool_interface_j0.7_pad5.csv",
+    "refold_gpuh_per_fold": 0.005671656050955414
+  },
+  "methods": {
+    "genie3": {
+      "aic": 7521.790002253219,
+      "backend": "statsmodels",
+      "coef": {
+        "E": 1.0003931658944851,
+        "H": 1.1124346938323426,
+        "const": -2.261653071154227,
+        "disjointed_parts_z": -1.4680980283254796,
+        "len_x_disj": 0.13926776603831176,
+        "mean_rsa_z": -0.18608704138147467,
+        "motif_length_z": -0.15715377578775627
+      },
+      "cost_gpu_hours": 51.14,
+      "cost_tasks_covered": 60,
+      "cost_tasks_total": 314,
+      "design_rate": 0.22018378308419076,
+      "gen_gpuh_per_design": 0.008523333333333334,
+      "label": "Genie3",
+      "method_dir": "genie3",
+      "n_designable": 6805,
+      "n_designs": 30906,
+      "n_tasks": 314,
+      "pseudo_r2_mcfadden": 0.2000270959440441,
+      "run": "lib_interface_pad5",
+      "seqs_per_design": 7.999482301171294
+    },
+    "laproteina": {
+      "aic": 4531.775293245179,
+      "backend": "statsmodels",
+      "coef": {
+        "E": 0.9463416043271469,
+        "H": 0.4825631261542186,
+        "const": -3.267919198124833,
+        "disjointed_parts_z": -1.754478584597335,
+        "len_x_disj": 0.1194456251235059,
+        "mean_rsa_z": -0.08819394073216577,
+        "motif_length_z": -0.13277658395640124
+      },
+      "cost_gpu_hours": 31.63,
+      "cost_tasks_covered": 314,
+      "cost_tasks_total": 314,
+      "design_rate": 0.10952229299363057,
+      "gen_gpuh_per_design": 0.0010073248407643312,
+      "label": "La-Proteina (idx)",
+      "method_dir": "laproteina",
+      "n_designable": 3439,
+      "n_designs": 31400,
+      "n_tasks": 314,
+      "pseudo_r2_mcfadden": 0.17483327236418333,
+      "run": "lib_interface_pad5",
+      "seqs_per_design": 1.0
+    },
+    "laproteina_unindexed": {
+      "aic": 7929.68355306632,
+      "backend": "statsmodels",
+      "coef": {
+        "E": 0.763975263263693,
+        "H": 0.6430523106262956,
+        "const": -1.555816727306108,
+        "disjointed_parts_z": -0.36497275216633457,
+        "len_x_disj": -0.009949194058092161,
+        "mean_rsa_z": -0.1326662290583852,
+        "motif_length_z": -0.3541943224869483
+      },
+      "cost_gpu_hours": 62.95,
+      "cost_tasks_covered": 312,
+      "cost_tasks_total": 314,
+      "design_rate": 0.23644847864996166,
+      "gen_gpuh_per_design": 0.0020176282051282053,
+      "label": "La-Proteina (uidx)",
+      "method_dir": "laproteina",
+      "n_designable": 7398,
+      "n_designs": 31288,
+      "n_tasks": 314,
+      "pseudo_r2_mcfadden": 0.04670548779434347,
+      "run": "lib_interface_pad5_uidx",
+      "seqs_per_design": 1.0
+    },
+    "pp1c_bb": {
+      "aic": 5212.93259170222,
+      "backend": "statsmodels",
+      "coef": {
+        "E": 1.0592257178414677,
+        "H": 0.589140821590235,
+        "const": -2.6313223804066928,
+        "disjointed_parts_z": -1.4842668973818611,
+        "len_x_disj": 0.06987020346801204,
+        "mean_rsa_z": -0.12274258015932951,
+        "motif_length_z": -0.25935309663264006
+      },
+      "cost_gpu_hours": 14.98,
+      "cost_tasks_covered": 314,
+      "cost_tasks_total": 314,
+      "design_rate": 0.16185266928957553,
+      "gen_gpuh_per_design": 0.00047707006369426754,
+      "label": "Protpardelle-1c",
+      "method_dir": "pp1c_bb",
+      "n_designable": 5060,
+      "n_designs": 31263,
+      "n_tasks": 314,
+      "pseudo_r2_mcfadden": 0.16839501630040388,
+      "run": "lib_interface_pad5",
+      "seqs_per_design": 8.0
+    },
+    "proteina": {
+      "aic": 4249.136697621305,
+      "backend": "statsmodels",
+      "coef": {
+        "E": 0.6840384269528647,
+        "H": 0.9958394877074891,
+        "const": -3.0270568602178725,
+        "disjointed_parts_z": -1.345888735081456,
+        "len_x_disj": 0.024537335502003696,
+        "mean_rsa_z": -0.16489534344936993,
+        "motif_length_z": -0.13836005344945823
+      },
+      "cost_gpu_hours": 33.01,
+      "cost_tasks_covered": 314,
+      "cost_tasks_total": 314,
+      "design_rate": 0.10917197452229299,
+      "gen_gpuh_per_design": 0.0010512738853503184,
+      "label": "Proteina",
+      "method_dir": "proteina",
+      "n_designable": 3428,
+      "n_designs": 31400,
+      "n_tasks": 314,
+      "pseudo_r2_mcfadden": 0.15428834444846162,
+      "run": "lib_interface_pad5",
+      "seqs_per_design": 7.999968152866242
+    },
+    "rfdiff": {
+      "aic": 4625.708620158712,
+      "backend": "statsmodels",
+      "coef": {
+        "E": 0.779432092641763,
+        "H": 1.3019402146309869,
+        "const": -2.5539757053698704,
+        "disjointed_parts_z": -1.4447394775217506,
+        "len_x_disj": 0.050707429579528465,
+        "mean_rsa_z": -0.27402417743212104,
+        "motif_length_z": -0.19805385513928775
+      },
+      "cost_gpu_hours": 193.29,
+      "cost_tasks_covered": 314,
+      "cost_tasks_total": 304,
+      "design_rate": 0.21068808655382976,
+      "gen_gpuh_per_design": 0.006155732484076433,
+      "label": "RFdiffusion",
+      "method_dir": "rfdiff",
+      "n_designable": 5141,
+      "n_designs": 24401,
+      "n_tasks": 304,
+      "pseudo_r2_mcfadden": 0.18072581407572286,
+      "run": "lib_interface_pad5",
+      "seqs_per_design": 8.0
+    }
+  },
+  "mu": {
+    "disjointed_parts": 1.8248407643312101,
+    "mean_rsa": 0.33200318471337587,
+    "motif_length": 7.945859872611465
+  },
+  "refold_gpuh_per_fold": 0.005671656050955414,
+  "schema_version": 2,
+  "sd": {
+    "disjointed_parts": 0.8256399242206911,
+    "mean_rsa": 0.10725192040574272,
+    "motif_length": 2.4896460465637635
+  }
+}

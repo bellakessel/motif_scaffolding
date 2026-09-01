@@ -1,0 +1,61 @@
+Bootstrap: docker
+From: pytorch/pytorch:2.7.0-cuda11.8-cudnn9-runtime
+
+# ============================================================================
+# La-Proteina — generation container (mirrors genie3.def / proteina pattern), reconciled EXACTLY to
+# la-proteina/environment.yaml (torch 2.7.0 + cu118; graphein==1.7.7 --no-deps; PyG wheels for 2.7.0+cu118).
+#
+# proteina.sif does NOT work for La-Proteina (missing graphein + cpdb-protein). Like Proteina, La-Proteina
+# needs compiled PyG (torch_geometric/scatter/sparse/cluster) — but these are prebuilt WHEELS from the pyg
+# index for torch-2.7.0+cu118, so no source compilation. The La-Proteina SOURCE is NOT installed: bind-mounted
+# at runtime, run via PYTHONPATH=<repo> python -m proteinfoundation.generate. `bioconda::mmseqs2` is eval-stack
+# only (designability), NOT needed for generation, so it is omitted.
+#
+# --- BUILD (Euler login node — internet via eth_proxy + fakeroot) --------------------
+#   cd /cluster/work/wicky/bekessel/software/la-proteina
+#   module load eth_proxy
+#   export APPTAINER_TMPDIR=$SCRATCH/apptmp APPTAINER_CACHEDIR=$SCRATCH/apptcache
+#   mkdir -p "$APPTAINER_TMPDIR" "$APPTAINER_CACHEDIR"
+#   apptainer build --fakeroot la-proteina.sif la-proteina.def
+# --- RUN -----------------------------------------------------------------------------
+#   sbatch --export=ALL,RUN_DIR=<run> scripts/la_proteina_generate.sbatch   (see RUN_ON_EULER.md)
+# ============================================================================
+
+%labels
+    Tool         La-Proteina (NVIDIA, ICLR'25) — all-atom co-design motif scaffolding (LD4 indexed all-atom)
+    Scope        generation-only; eval stack (mmseqs2) omitted
+    Base         pytorch/pytorch:2.7.0-cuda11.8-cudnn9-runtime
+    Packaged_by  bekessel
+
+%post
+    set -eux
+    export PIP_NO_CACHE_DIR=1
+    # cpdb-protein builds a C extension (cpdb/parser.c) but the pytorch runtime image ships no compiler.
+    export DEBIAN_FRONTEND=noninteractive
+    apt-get update && apt-get install -y --no-install-recommends gcc g++ && rm -rf /var/lib/apt/lists/*
+    python -m pip install --upgrade pip
+    # torch 2.7.0 + cu118 comes from the base image — do NOT reinstall (PyG wheels below must match it).
+    # environment.yaml pip section (exact pins), + conda-forge::transformers as pip:
+    python -m pip install \
+        "transformers==4.48.3" \
+        python-dotenv==1.0.1 einops==0.6 dm-tree==0.1.8 lightning==2.5.0 loguru==0.7.2 \
+        hydra-core==1.3.1 numpy==1.23.5 pandas==2.3.0 biopandas==0.5.1 wandb==0.17.0 wget==3.2 \
+        tqdm==4.66.4 ml-collections==0.1.1 jaxtyping loralib biopython "biotite>=0.41.0" \
+        cpdb-protein==0.2.0 "pre-commit>=4.0.0" joblib==1.4.2 rich==14.0.0 "deepdiff>=8.6.1" \
+        multipledispatch plotly pydantic rich-click scikit-learn seaborn xarray
+    # graphein WITHOUT its own dep tree (exactly as environment.yaml specifies)
+    python -m pip install graphein==1.7.7 --no-deps
+    # PyG (compiled wheels) matched to torch-2.7.0+cu118
+    python -m pip install torch_geometric torch_scatter torch_sparse torch_cluster \
+        -f https://data.pyg.org/whl/torch-2.7.0+cu118.html
+    python -c "import torch; print('torch', torch.__version__, 'cuda', torch.version.cuda)"
+    python -c "import graphein, torch_geometric, torch_scatter, transformers, lightning, hydra, biotite; print('import chain OK')"
+
+%test
+    python - <<'PY'
+import torch, transformers, lightning, hydra, graphein, torch_geometric, biotite, numpy, pandas
+print("la-proteina gen deps import OK | torch", torch.__version__, "| numpy", numpy.__version__)
+PY
+
+%runscript
+    exec python -m proteinfoundation.generate "$@"

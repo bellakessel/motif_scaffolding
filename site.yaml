@@ -1,0 +1,63 @@
+# site.yaml — everything specific to THIS cluster. Nothing else in the repo hardcodes a path.
+#
+#   ${VAR}           environment variable; a MISSING one is a hard error, never a silent default
+#   ${VAR:-default}  environment variable with a fallback
+#   ${roots.work}    another key in this file
+#
+# There is deliberately no packaged fallback: guessing a cluster layout is how a job ends up
+# reading the wrong weights, and that failure is silent — the job runs.
+
+roots:
+  work:    /cluster/work/wicky
+  scratch: ${SCRATCH}                      # must exist; must not be /tmp or under it
+  repo:    ${roots.work}/bekessel/motif_benchmark
+  runs:    ${MOTIFGO_RUNS:-${roots.work}/bekessel/motif_library/runs}
+
+logs:
+  # Slurm expands %u (user) and %x (job name) in --output, but NEVER environment variables,
+  # so this root is baked into each sbatch's #SBATCH line and the directory must exist at submit.
+  root:  /cluster/scratch/%u/motifgo_logs
+  stages: [generate, filter, mpnn_prep, mpnn, af3_build, af3, score]
+
+containers:
+  rfdiffusion:  ${roots.work}/containers/RFdiffusion.sif
+  alphafold3:   ${roots.work}/containers/alphafold3.sif
+  proteina:     ${roots.work}/containers/proteina.sif
+  proteinmpnn:  ${roots.work}/containers/openfold.sif      # supplies python/torch; MPNN repo is separate
+  genie3:       ${roots.work}/containers/genie3.sif
+  laproteina:   ${roots.work}/containers/la-proteina.sif   # idx AND uidx — one image, a runtime flag
+  protpardelle: ${roots.work}/containers/protpardelle.sif
+# All seven live in the shared store. The repo ships only the .def build recipes (containers/).
+# software/<method>/*.sif are back-compat symlinks into the store; nothing reads them by default.
+
+# Model repos: source + hydra configs + WEIGHTS. These stay under software/ — the generate sbatches
+# `cd` into them and hydra resolves configs script-relative, so they are not relocatable.
+model_repos:
+  genie3:       ${roots.work}/bekessel/software/genie3
+  proteina:     ${roots.work}/bekessel/software/proteina
+  laproteina:   ${roots.work}/bekessel/software/la-proteina
+  laproteina_uidx: ${roots.work}/bekessel/software/la-proteina-uidx
+  protpardelle: ${roots.work}/bekessel/software/protpardelle-1c
+  proteinmpnn:  ${roots.work}/bekessel/software/ProteinMPNN
+
+weights:
+  rfdiffusion:  ${roots.work}/params/RFParams/Base_ckpt.pt
+  af3_params:   ${roots.work}/params/af3_params
+  genie3:       ${roots.work}/bekessel/software/genie3/pretrained/v1
+  proteinmpnn:  ${roots.work}/bekessel/software/ProteinMPNN
+
+# Motif definition — the values the published library was built with. Changing any of these
+# changes what a "motif" means, so they are recorded here rather than defaulted in code.
+motif_defaults:
+  rsa_cutoff:          0.20     # surface = RSA > this -> every surface residue is a centroid
+  neighborhood_cutoff: 7.0      # motif = centroid + Ca contacts within this
+  neighborhood_metric: ca
+  gap_merge:           4        # see README "Reducing disjointedness"
+  emit_filled:         true
+
+# Scaffold-length policy — held IDENTICAL across all methods; this is what makes the benchmark fair.
+contig_defaults:
+  flank_n: "2-10"
+  flank_c: "35-75"
+  linker:  "1-5"
+  nsamples: 100

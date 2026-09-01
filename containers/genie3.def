@@ -1,0 +1,83 @@
+Bootstrap: docker
+From: pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime
+
+# ============================================================================
+# Genie3 — LEAN, GENERATION-ONLY singularity container (Phase 1).
+#
+# Genie3 (aqlaboratory/genie3) ships only a conda installer (scripts/setup/setup.sh);
+# the lab standard is singularity/apptainer, never conda. This recipe reproduces just
+# the *generation* environment: torch (from the base image, exactly the pinned 2.7.1
+# + CUDA 12.6) plus the handful of pure-python deps that `genie3 generate` imports.
+#
+# The heavy EVALUATION stack (ColabFold / ESMFold / jax-cuda / FoldSeek / ProteinMPNN /
+# TMscore / DSSP) that setup.sh also installs is DELIBERATELY OMITTED — `genie3 generate`
+# imports the evaluation package only lazily (cli.py:_handle_evaluate), so motif-
+# scaffolding backbone generation runs without it. Evaluation + MotifBench designability
+# metrics are Phase 2 (extend this image or reuse existing lab containers).
+#
+# The Genie3 source is NOT installed into the image. It is bind-mounted at runtime and
+# run via `PYTHONPATH=<repo>/src python -m genie3.cli …`, so the image stays independent
+# of the repo path and any repo edit takes effect with no rebuild.
+#
+# Deps below = every third-party module the generation/runtime/config path imports
+# (Bio, lightning, ml_collections, numpy, pandas, scipy, torch, yaml, zstandard) + tqdm.
+#
+# --- BUILD (Euler login node — needs internet via eth_proxy + fakeroot) --------------
+#   module load eth_proxy
+#   export APPTAINER_TMPDIR=$SCRATCH/apptmp APPTAINER_CACHEDIR=$SCRATCH/apptcache
+#   mkdir -p "$APPTAINER_TMPDIR" "$APPTAINER_CACHEDIR"
+#   apptainer build --fakeroot \
+#     /cluster/work/wicky/bekessel/software/genie3/genie3.sif \
+#     /cluster/work/wicky/bekessel/software/genie3/genie3.def
+#
+# --- WEIGHTS (one-time, login node, needs eth_proxy) ---------------------------------
+#   cd /cluster/work/wicky/bekessel/software/genie3
+#   bash scripts/setup/download.sh --weights      # -> pretrained/v1/checkpoints/step=600000.ckpt
+#
+# --- RUN -----------------------------------------------------------------------------
+#   sbatch genie3_generate.sbatch                 # smoke: examples/motif_scaffolding/experiment.yaml
+#   (see RUN_ON_EULER.md for the full walkthrough)
+# ============================================================================
+
+%labels
+    Tool         Genie3 (aqlaboratory/genie3, commit d77ae5a)
+    Scope        generation-only (motif scaffolding / unconditional / binder GEN; no eval)
+    Base         pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime
+    Packaged_by  bekessel
+
+%post
+    set -eux
+    export PIP_NO_CACHE_DIR=1
+    python -m pip install --upgrade pip
+    # torch is already in the base image at the pinned 2.7.1 + cu12.6 — do NOT reinstall it.
+    # Everything else is pure-python; none of these upgrade torch.
+    python -m pip install \
+        "numpy>=2.0.2,<3" \
+        "biopython<1.86" \
+        lightning \
+        ml-collections \
+        scipy \
+        pandas \
+        PyYAML \
+        tqdm \
+        zstandard \
+        huggingface_hub
+    # The base image's numpy bytecode can be stale/truncated in the build overlay
+    # (symptom: "EOFError: marshal data too short" importing numpy.typing via scipy).
+    # Force a clean reinstall so every numpy .pyc is rewritten; --no-deps keeps torch untouched.
+    python -m pip install --force-reinstall --no-deps "numpy>=2.0.2,<3"
+    # Fail the build NOW (not at first design) if torch got disturbed OR the import chain
+    # that lightning walks is broken (numpy.typing -> scipy.signal -> torchmetrics -> lightning).
+    python -c "import torch; print('torch', torch.__version__, 'cuda', torch.version.cuda)"
+    python -c "import numpy, numpy.typing, scipy.signal, torchmetrics, lightning; print('import chain OK | numpy', numpy.__version__)"
+
+%test
+    # Import-only (build runs on a GPU-less login node, so DON'T assert cuda.is_available()).
+    python - <<'PY'
+import torch, lightning, ml_collections, Bio, numpy, scipy, pandas, yaml, zstandard, tqdm
+print("genie3 gen deps import OK | torch", torch.__version__, "| numpy", numpy.__version__)
+PY
+
+%runscript
+    # `apptainer run genie3.sif <args>` -> genie3 CLI (repo bind-mounted, PYTHONPATH set by caller)
+    exec python -m genie3.cli "$@"

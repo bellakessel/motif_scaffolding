@@ -1,0 +1,31 @@
+# ── the worked example ────────────────────────────────────────────────
+# Full depth (~650 MB) and regenerable; it lives on disk beside the repo, not in git.
+#   python scripts/extras/make_example_bundle.py --run <run-dir>
+example/*
+!example/README.md
+
+# ── run artefacts ─────────────────────────────────────────────────────
+# hydra / RFdiffusion / lightning write these relative to the working directory
+# whenever a driver is launched from the repo root. Never source.
+outputs/
+lightning_logs/
+slurm-*.out
+runs/
+
+# ── build + editor junk ───────────────────────────────────────────────
+__pycache__/
+*.pyc
+*.egg-info/
+.ipynb_checkpoints/
+
+# macOS AppleDouble files, created by the sshfs mount
+._*
+.DS_Store
+
+# ── never commit container images or model weights ────────────────────
+# Images live in /cluster/work/wicky/containers; weights under software/<method>/.
+# Only the .def build recipes belong here.
+*.sif
+*.ckpt
+*.pt
+*.pth
