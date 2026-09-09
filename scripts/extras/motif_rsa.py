@@ -108,9 +108,20 @@ def _init_worker(run_dir, method, fixed, task_names, lib, pool_meta):
 
 
 def _design_task(dname):
-    """Longest task_name that prefixes the design (robust to <task>_N / <task>_design_N naming)."""
-    for t in _W["task_names"]:
+    """Longest task_name matching the design name.
+
+    Usually the task is a PREFIX: <task>_N, <task>_design_N, or <task>_sample_<task>_N (baseline pp1c_bb).
+    But Protpardelle in the contigscale run emits `sample_<task>_<N>`, where the task is NOT a prefix.
+    That used to fall through to the rsplit fallback and yield task='sample_<task>', pdb_name='sample',
+    so run_dir/motifs/<task>.pdb was never found, len(nat_ids)=0 != len(pos), and EVERY row came back
+    n_motif=0 -- a 42,760-row CSV with nothing usable in it, written without a single warning.
+    Prefix is tried first, so every method that already worked is bit-for-bit unchanged.
+    """
+    for t in _W["task_names"]:                 # <task>_... (all methods except contigscale pp1c_bb)
         if dname.startswith(t):
+            return t
+    for t in _W["task_names"]:                 # sample_<task>_<N> (contigscale pp1c_bb)
+        if t in dname:
             return t
     return dname.rsplit("_", 1)[0]
 
@@ -212,12 +223,20 @@ def main():
         w.writeheader()
         with mp.Pool(nproc, initializer=_init_worker,
                      initargs=(run_dir, a.method, fixed, task_names, a.lib, pool_meta)) as pool_:
-            done = 0
+            done = n_empty = 0
             for rows in pool_.imap_unordered(_score_archive, archives):
                 w.writerows(rows); n += len(rows); done += 1
+                n_empty += sum(1 for r in rows if not r["n_motif"])
                 if done % 20 == 0 or done == len(archives):
-                    print(f"  [{a.method}] {done}/{len(archives)} archives, {n} designs", flush=True)
+                    print(f"  [{a.method}] {done}/{len(archives)} archives, {n} designs "
+                          f"({n_empty} with no motif RSA)", flush=True)
     print(f"[motif_rsa:{a.method}] wrote {n} design rows -> {out}")
+    # Fail loudly. A silent all-empty CSV is exactly how the contigscale pp1c_bb table shipped broken.
+    if n and n_empty / n > 0.5:
+        print(f"!! WARNING: {n_empty}/{n} rows ({100*n_empty/n:.1f}%) have n_motif=0 -> the table is NOT usable.\n"
+              f"!! Usual cause: design names not resolving to task names (check _design_task), or\n"
+              f"!! run_dir/motifs/<task>.pdb missing, or positions.jsonl keyed differently.", flush=True)
+        raise SystemExit(2)
 
 
 if __name__ == "__main__":

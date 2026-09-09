@@ -28,7 +28,7 @@ from typing import Dict, List
 from motifgo import score as mscore
 
 CIF_SUFFIX = "_model.cif"
-RANK_MIN = 0.75          # AF3 confidence gate; `designable` = motifRMSD<=1 & scRMSD<=2 & ranking_score>=RANK_MIN
+RANK_MIN = mscore.RANK_MIN   # AF3 confidence gate; `designable` = motifRMSD<=1 & scRMSD<=2 & rank>=RANK_MIN.
                          # (the notebook's 3-gate). ESMFold2 has no ranking_score -> that gate is skipped there.
 
 

@@ -37,8 +37,12 @@ from biotite.structure import AtomArrayStack
 from biotite.structure.io.pdbx import CIFFile, get_structure
 
 # ── the designability thresholds. Defined HERE and nowhere else in the repo. ──────────────────
+# All three live HERE and nowhere else. They decide every published number, so a second copy
+# that drifts silently re-defines the result. scripts/ and motifgo.predictor import them.
 MOTIF_RMSD_MAX = 1.0          # designable iff motifRMSD <= 1.0 A  (backbone N, CA, C)
 SC_RMSD_MAX = 2.0             # designable iff scRMSD    <= 2.0 A  (CA only)
+RANK_MIN = 0.75               # designable iff AF3 ranking_score >= 0.75  (INCLUSIVE: a large mass of
+                              # predictions sits exactly at 0.75, so > would change the result)
 MOTIF_ATOMS = ("N", "CA", "C")
 SC_ATOMS = ("CA",)
 

@@ -40,10 +40,8 @@ import json
 import math
 from typing import Dict, List, Optional
 
-# ── the three gates ──────────────────────────────────────────────────────────────────────────
-MOTIF_RMSD_MAX = 1.0
-SC_RMSD_MAX = 2.0
-RANK_MIN = 0.75
+# ── the three gates — imported, never redefined (motifgo.score is the single source) ─────────
+from .score import MOTIF_RMSD_MAX, SC_RMSD_MAX, RANK_MIN     # noqa: F401  (re-exported)
 
 # ── the design matrix ────────────────────────────────────────────────────────────────────────
 CONT_FEATURES = ["disjointed_parts", "motif_length", "mean_rsa"]

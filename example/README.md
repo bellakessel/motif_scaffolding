@@ -78,7 +78,7 @@ Placeholders: `<repo>` the checkout, `<runs>` where runs live, `<venv>` your env
 ```bash
 REPO=<repo>                                    # e.g. /cluster/work/wicky/bekessel/motif_benchmark
 RUN=<runs>/example7                            # e.g. /cluster/work/wicky/bekessel/motif_library/runs/example7
-POOL=$REPO/example/pool_example7.csv
+POOL=$REPO/example/pool_example7.csv        # cut from motifs/pool.csv — see step 2
 source <venv>/bin/activate                     # needs motifgo: pip install -e $REPO --no-deps
 mkdir -p /cluster/scratch/$USER/motifgo_logs/{generate,filter,mpnn_prep,mpnn,af3_build,af3,score}
 ```

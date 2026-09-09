@@ -43,12 +43,13 @@ from typing import Dict
 import numpy as np
 import pandas as pd
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))   # cif_backbone sits beside this file
 from cif_backbone import backbone_coords          # noqa: E402
-from dssp_numpy import assign_c3                  # noqa: E402
+from motifgo.dssp import assign_c3                # the vendored DSSP; was scripts/dssp_numpy.py before
+                                                  #   the two copies were merged into motifgo.dssp
+from motifgo.score import RANK_MIN                # single source; INCLUSIVE (see docstring)
 
 CIF_SUFFIX = "_model.cif"
-RANK_MIN = 0.75          # 5_score.py:RANK_MIN. INCLUSIVE -- see module docstring.
 
 FIELDS = ["method", "prediction", "design_name", "task_name", "pdb_name", "n_res",
           "H_frac", "E_frac", "C_frac", "dssp3", "seq", "motifRMSD", "scRMSD", "plddt_mean",

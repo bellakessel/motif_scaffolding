@@ -19,7 +19,7 @@ imports from `motifgo` or is entirely self-contained. That is the whole dependen
 | # | stage | script | what it does | imports from `motifgo` |
 |---|---|---|---|---|
 | 0 | motif | `motif/motif_extract.py` | protein PDB + `target.yaml` → surface (SASA) → motif residue lists → descriptors → cross-library redundancy check | `motif_define` |
-| 0 | motif | `motif/build_pool.py` *(P5)* | dedup + interface filter + padding → `motifs/pool.csv` | — |
+| 0 | motif | `motif/build_pool.py` *(P5)* | dedup + interface filter + padding → `motifs/pool.csv *(P5)*` | — |
 | 0 | motif | `motif/stage_motif.py` | `pool.csv` → `<run>/manifest.csv` + staged motif PDBs. **The only manifest writer.** | `contig` |
 | 1 | generate | `generate/rfdiff/rfdiff_generate.sbatch` | reads `manifest.csv` directly; no driver | — |
 | 1 | generate | `generate/proteina/proteina_from_library.py` + `.sbatch` | per-motif configs → backbones | `contig` |

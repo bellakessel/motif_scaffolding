@@ -206,6 +206,15 @@ def main(argv=None):
     # clobber it (rfdiff/genie3 still read the shared <run>/manifest.csv the stager wrote).
     a.manifest = (os.path.join(a.method_dir, "manifest.csv") if a.from_manifest
                   else os.path.join(a.run_dir, "manifest.csv"))
+
+    # Never overwrite a shared manifest the stager already wrote. stage_motif.py emits the canonical
+    # schema (it alone carries `fragments`); a driver rebuilding it from --pool drops that column and
+    # silently redefines the contract that rfdiff and genie3 read. Creating it when ABSENT is still
+    # allowed, so "run a driver without the stager" keeps working.
+    if not a.from_manifest and os.path.exists(a.manifest):
+        shared, a.manifest = a.manifest, os.path.join(a.method_dir, "manifest.csv")
+        print(f"[manifest] {shared} already exists (stager-written) -> keeping it;\n"
+              f"[manifest] writing this driver's provenance to {a.manifest} instead")
     a.motif_only = (a.motif_only == "true")
 
     if a.single:

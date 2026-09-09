@@ -6,8 +6,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 # MotifBench designability gates (arXiv:2502.12479)
-MOTIF_RMSD_MAX = 1.0
-SC_RMSD_MAX = 2.0
+from motifgo.score import MOTIF_RMSD_MAX, SC_RMSD_MAX     # single source — never hardcode a gate
 
 # fixed, reused palettes
 SSE_PALETTE = {"C": "#7570b3", "E": "#1b9e77", "H": "#d95f02"}   # coil / sheet / helix
