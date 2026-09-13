@@ -1,0 +1,127 @@
+MOTIF-SCAFFOLDING SUCCESS PREDICTOR — MODEL BRIEF
+=================================================
+
+PURPOSE
+Given a protein motif that has never been scaffolded, predict, for each of six generator
+arms, the probability that a single generated design will be "designable", and from that the
+expected GPU-hours per designable design. Used to triage motifs and choose a method before
+spending compute. It is advisory: no pipeline stage depends on it.
+
+UNIT OF OBSERVATION
+One row per (motif, method). Outcome is binomial: n_designable successes out of n_designs
+trials.
+
+OUTCOME DEFINITION (three gates, all inclusive, all required)
+  a SEQUENCE passes  iff  motifRMSD <= 1.0 A          # refold backbone N,CA,C at the design
+                    AND   scRMSD    <= 2.0 A          #   positions, vs the native motif
+                    AND   ranking_score >= 0.75       # AlphaFold3 confidence
+  a DESIGN is designable  iff ANY of its sequences passes   (8 for backbone arms, 1 co-design)
+  a MOTIF  is designable  iff ANY of its designs is designable
+Gates are always re-derived from the raw columns. Do NOT read the `designable` column of
+af3_refold_scores.csv: the baseline CSVs predate the third gate and carry a TWO-gate value.
+
+FEATURES — four motif descriptors, six design-matrix columns
+  continuous, z-scored with the FITTING POOL's mu/sd (stored in the model, so an unseen motif
+  is scaled identically):
+    disjointed_parts   number of backbone fragments      mu=1.8248  sd=0.8256
+    motif_length       residues in the motif             mu=7.9459  sd=2.4896
+    mean_rsa           mean relative solvent accessibility  mu=0.3320  sd=0.1073
+  derived:
+    len_x_disj = motif_length_z * disjointed_parts_z     (they are correlated, r~0.58)
+  categorical: dominant_sse -> dummies H, E   (coil C is the reference level)
+
+  x = [disjointed_parts_z, motif_length_z, len_x_disj, H, E, mean_rsa_z]
+
+MODEL
+Binomial logistic GLM (logit link), fitted SEPARATELY PER METHOD — six independent small
+models, so each generator gets its own coefficients. Fitted with statsmodels
+  sm.GLM(np.column_stack([n_success, n_failure]), [1|X], family=Binomial()).fit()
+i.e. maximise  sum_i [ y_i log p_i + (n_i - y_i) log(1 - p_i) ],  p_i = sigmoid(b0 + b·x_i).
+No regularisation. (sklearn LogisticRegression(penalty=None) on binomial-expanded rows with
+sample_weight is the fallback and gives the same coefficients to ~2 dp.)
+
+  logit(p) = b0 + b1*disj_z + b2*len_z + b3*len_x_disj + b4*H + b5*E + b6*rsa_z
+  p_hat    = 1 / (1 + exp(-logit))
+
+Rationale for the simplest model: a plain logistic was not beaten by more complex models for
+de-novo design-success prediction (Garcia et al., Protein Science 2026).
+
+PER-FEATURE ATTRIBUTION
+  contribution_j = coef_j * x_j        (log-odds)
+  intercept + sum_j contribution_j = logit(p_hat)   exactly
+For a linear model this IS the nomogram decomposition, and equals SHAP. No extra machinery.
+
+FITTED COEFFICIENTS  (log-odds; baseline run, 314 motifs x 6 arms)
+  method                const   disj_z   len_z  len*disj      H      E   rsa_z   rate  pR2
+  rfdiff               -2.554   -1.445  -0.198     0.051  1.302  0.779  -0.274  0.211 .181
+  proteina             -3.027   -1.346  -0.138     0.025  0.996  0.684  -0.165  0.109 .154
+  genie3               -2.262   -1.468  -0.157     0.139  1.112  1.000  -0.186  0.220 .200
+  pp1c_bb              -2.631   -1.484  -0.259     0.070  0.589  1.059  -0.123  0.162 .168
+  laproteina           -3.268   -1.754  -0.133     0.119  0.483  0.946  -0.088  0.110 .175
+  laproteina_unindexed -1.556   -0.365  -0.354    -0.010  0.643  0.764  -0.133  0.236 .047
+  (rate = observed design-level success; pR2 = McFadden pseudo-R^2)
+
+HEADLINE RESULT
+Disjointedness dominates. Every index-conditioned arm loses 1.35-1.75 log-odds per SD of
+disjointed_parts; length, the interaction and exposure add little. La-Proteina UNINDEXED is
+the structural exception at -0.365: it places the motif itself rather than being told where,
+so fragment count barely hurts it. Its low pseudo-R^2 (0.047) is not a defect -- it succeeds
+fairly uniformly, so there is little motif-feature signal left to predict.
+
+COST MODEL
+Only GENERATION cost differs between methods. The AF3 refold is the same shared job, priced
+per FOLD and multiplied by each arm's own sequences-per-design (8 backbone, 1 co-design):
+  gpuh_per_design  = gen_gpuh_per_design + refold_gpuh_per_fold * seqs_per_design
+  gpuh_per_success = gpuh_per_design / p_hat
+  P(>=1 designable in N designs) = 1 - (1 - p_hat)^N
+  refold_gpuh_per_fold = 0.005672   (~20 s/fold, from the one measured refold row)
+  gen_gpuh_per_design: rfdiff 0.00616 · proteina 0.00105 · genie3 0.00852 ·
+                       pp1c_bb 0.00048 · laproteina 0.00101 · uidx 0.00202
+Pricing the refold per DESIGN instead (one flat constant for all) overcharges the co-design
+arms 8x. Because the refold term dominates for backbone arms, their ROI ranking is close to
+their accuracy ranking -- a "cheap" generator buys almost nothing.
+
+TRAINING DATA
+Fit set is the BASELINE run only: runs/lib_interface_pad5 (5 arms) + runs/lib_interface_pad5_uidx
+(the unindexed arm). 314 tasks, 100 designs requested each. Do NOT mix in contigscale or
+hardest_0pass: different contig grammar, different cost basis.
+Pool: motif_pool_interface_j0.7_pad5.csv (7 antigens; her2, pdl1, il13, il1b, il2, tnfa).
+
+EXTERNAL VALIDATION — Mcl-1 / 2mhs, genuinely held out (not among the 7 fit antigens)
+Predictions from motif descriptors ALONE; ground truth from an AF3 refold of ~1000 RFdiffusion
+trajectories per motif, aggregated under the identical three gates.
+  78 motifs joined, 65,606 designs
+  Spearman rho 0.599 · Pearson r 0.641
+  predicted tertiles  0.133 / 0.470 / 0.603  ->  observed  0.211 / 0.592 / 0.714  (monotonic)
+  by fragment count:  1 frag  pred 0.504 obs 0.633
+                      2 frag  pred 0.131 obs 0.165
+                      3 frag  pred 0.016 obs 0.018
+The model UNDER-predicts by roughly a constant offset (2mhs motifs are more contiguous and came
+from an older unpadded extraction, so they are genuinely easier). Use it to RANK and TRIAGE;
+read absolute p_hat as a lower bound. Only the rfdiff arm is validatable this way, since that
+is the only method run on 2mhs.
+
+KNOWN CAVEATS
+- genie3's cost row covers 60 of 314 tasks while its scores cover all 314, so its
+  gen_gpuh_per_design is inflated ~5x and any ROI rank it wins is UNVERIFIED. fit_predictor.py
+  warns on this automatically.
+- The 314-task pool carries "j0.7" in its filename but was never deduplicated: 84 motif pairs
+  at Jaccard >= 0.7 remain, 5 of them identical residue sets. Cross-method comparison is
+  unaffected (all arms got the same 314); aggregate rates are weighted by that redundancy.
+- Re-fit trigger: any change to the three gate thresholds, or adding a method or run,
+  invalidates the model. Re-run aggregate_outcomes.py then fit_predictor.py.
+
+MODEL FILE CONTRACT  (models/success_model.json, ~6 kB, consumable by anything that can do a
+dot product and a sigmoid)
+  schema_version, cont_features, final_features, gates{motif_rmsd_max,sc_rmsd_max,rank_min},
+  mu{}, sd{}, refold_gpuh_per_fold,
+  methods{ <arm>: { label, coef{const, <feature>...}, gen_gpuh_per_design, seqs_per_design,
+                    design_rate, pseudo_r2_mcfadden, cost_tasks_covered, cost_tasks_total } },
+  meta{ fitted, outcomes, pool, costs[], nsamples, backend }
+
+CODE
+  motifgo/predictor.py            the contract: descriptors, gates, featurise, predict, model I/O
+  scripts/predict/aggregate_outcomes.py   score CSVs -> (task, method, n_designs, n_designable)
+  scripts/predict/fit_predictor.py        outcomes + pool + costs -> success_model.json
+  scripts/predict/predict_motif.py        the CLI (pure stdlib, no scientific stack needed)
+  scripts/predict/validate_predictor.py   held-out check against observed rates
