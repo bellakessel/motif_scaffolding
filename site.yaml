@@ -32,7 +32,7 @@ containers:
 
 # Model repos: source + hydra configs + WEIGHTS, one shared directory per generator in the lab store.
 # The generate sbatches take one as REPO and hydra resolves configs relative to it, so a model
-# directory is relocatable only as a whole. Each carries README_wicky.md with its provenance.
+# directory is relocatable only as a whole. Each keeps its upstream .git: `git status` there shows local patches.
 model_repos:
   genie3:       ${roots.work}/containers/genie3
   proteina:     ${roots.work}/containers/proteina

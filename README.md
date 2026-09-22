@@ -46,7 +46,7 @@ locations, deliberately separate:
 | what | where | why |
 |---|---|---|
 | **container images** (`.sif`) | `/cluster/work/wicky/containers/` | shared lab store; one copy per image for everyone |
-| **model repos + weights** | `/cluster/work/wicky/containers/<method>/` | one directory per generator (`genie3`, `proteina`, `la-proteina`, `la-proteina-uidx`, `protpardelle-1c`, `ProteinMPNN`): code, configs, weights and a `README_wicky.md` with provenance. The generate sbatches take it as `REPO` and hydra resolves configs relative to it, so a model directory moves as a whole, never piecemeal |
+| **model repos + weights** | `/cluster/work/wicky/containers/<method>/` | one directory per generator (`genie3`, `proteina`, `la-proteina`, `la-proteina-uidx`, `protpardelle-1c`, `ProteinMPNN`): code, configs and weights, plus the upstream `.git`, so `git status` inside a model directory shows exactly what was patched for this benchmark. The generate sbatches take it as `REPO` and hydra resolves configs relative to it, so a model directory moves as a whole, never piecemeal |
 
 `site.yaml` records both (`containers:` and `model_repos:`). The `*.sif` links inside some model
 directories are back-compat symlinks to the flat images; nothing reads them by default.
