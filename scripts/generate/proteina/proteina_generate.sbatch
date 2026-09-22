@@ -29,7 +29,7 @@ set -euo pipefail
 # matching the lean Genie3 setup.
 # ============================================================================
 
-REPO="${REPO:-/cluster/work/wicky/bekessel/software/proteina}"
+REPO="${REPO:-/cluster/work/wicky/containers/proteina}"
 SIF="${SIF:-/cluster/work/wicky/containers/proteina.sif}"     # existing lab sif; override with bekessel build
 METHOD="proteina"
 RUN_DIR="${RUN_DIR:-}"                                         # <runs>/<run>/ ; outputs -> $RUN_DIR/proteina/
@@ -78,7 +78,7 @@ echo "[proteina] sif=$SIF workdir=$WORKDIR select='$SEL' out=${OUT_ENV:-$REPO/in
 singularity exec --nv \
   --bind /cluster/work/wicky:/cluster/work/wicky \
   --bind "${SCRATCH}:${SCRATCH}" \
-  --env DATA_PATH="${DATA_PATH:-/cluster/work/wicky/bekessel/software/proteina/data}" \
+  --env DATA_PATH="${DATA_PATH:-/cluster/work/wicky/containers/proteina/data}" \
   --env HF_HOME="$HFCACHE" --env TRANSFORMERS_CACHE="$HFCACHE" --env HF_HUB_CACHE="$HFCACHE" \
   --env PROTEINA_CONFIG_DIR="$CFG_ENV" --env PROTEINA_OUT_DIR="$OUT_ENV" \
   "$SIF" \

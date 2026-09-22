@@ -47,7 +47,7 @@ SEED="${SEED:-42}"
 USE_GPU="${USE_GPU:-0}"          # 1 -> add --nv (also add #SBATCH --gpus=1 --gres=gpumem:8g when submitting)
 
 DS="${DS:-/cluster/work/wicky/bekessel/motif_benchmark/scripts/evaluate}"
-MP="${MP:-/cluster/work/wicky/bekessel/software/ProteinMPNN}"
+MP="${MP:-/cluster/work/wicky/containers/ProteinMPNN}"
 SIF="${SIF:-/cluster/work/wicky/containers/openfold.sif}"
 
 MDIR="$RUN_DIR/$METHOD"

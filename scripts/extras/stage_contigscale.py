@@ -103,7 +103,7 @@ def main(argv=None):
               file=sys.stderr)
     print("\nnext (all read <new-run>/manifest.csv):")
     print(f"  rfdiff  : sbatch --array=0-{n-1}%20 --export=ALL,RUN_DIR={run_dir} \\")
-    print(f"              /cluster/work/wicky/bekessel/software/rfdiff/rfdiff_generate.sbatch")
+    print(f"              <motif_benchmark>/scripts/generate/rfdiff/rfdiff_generate.sbatch")
     print(f"  genie3  : python .../genie3/scripts/genie3_from_library.py --run-dir {run_dir}")
     print(f"  proteina/laproteina/protpardelle : their *_from_library.py --manifest {manifest_csv} --run-dir {run_dir}")
 

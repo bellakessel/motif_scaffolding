@@ -27,11 +27,11 @@ From: pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime
 #   export APPTAINER_TMPDIR=$SCRATCH/apptmp APPTAINER_CACHEDIR=$SCRATCH/apptcache
 #   mkdir -p "$APPTAINER_TMPDIR" "$APPTAINER_CACHEDIR"
 #   apptainer build --fakeroot \
-#     /cluster/work/wicky/bekessel/software/genie3/genie3.sif \
-#     /cluster/work/wicky/bekessel/software/genie3/genie3.def
+#     /cluster/work/wicky/containers/genie3/genie3.sif \
+#     /cluster/work/wicky/containers/genie3/genie3.def
 #
 # --- WEIGHTS (one-time, login node, needs eth_proxy) ---------------------------------
-#   cd /cluster/work/wicky/bekessel/software/genie3
+#   cd /cluster/work/wicky/containers/genie3
 #   bash scripts/setup/download.sh --weights      # -> pretrained/v1/checkpoints/step=600000.ckpt
 #
 # --- RUN -----------------------------------------------------------------------------

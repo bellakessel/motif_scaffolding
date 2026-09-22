@@ -23,7 +23,7 @@ set -euo pipefail
 #   sbatch --array=0-0 --export=ALL,RUN_DIR=<run>,RUNTAG=$(basename <run>) scripts/la_proteina_generate.sbatch
 # ============================================================================
 
-REPO="${REPO:-/cluster/work/wicky/bekessel/software/la-proteina}"
+REPO="${REPO:-/cluster/work/wicky/containers/la-proteina}"
 SIF="${SIF:-/cluster/work/wicky/containers/la-proteina.sif}"
 RUN_DIR="${RUN_DIR:?set RUN_DIR=<runs_root>/<run>}"
 RUNTAG="${RUNTAG:-$(basename "$RUN_DIR")}"

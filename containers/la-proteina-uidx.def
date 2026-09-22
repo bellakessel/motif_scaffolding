@@ -12,7 +12,7 @@ From: pytorch/pytorch:2.7.0-cuda11.8-cudnn9-runtime
 # only (designability), NOT needed for generation, so it is omitted.
 #
 # --- BUILD (Euler login node — internet via eth_proxy + fakeroot) --------------------
-#   cd /cluster/work/wicky/bekessel/software/la-proteina
+#   cd /cluster/work/wicky/containers/la-proteina
 #   module load eth_proxy
 #   export APPTAINER_TMPDIR=$SCRATCH/apptmp APPTAINER_CACHEDIR=$SCRATCH/apptcache
 #   mkdir -p "$APPTAINER_TMPDIR" "$APPTAINER_CACHEDIR"

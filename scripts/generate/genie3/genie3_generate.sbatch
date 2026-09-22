@@ -34,7 +34,7 @@ set -euo pipefail
 # num_shards is taken from the array size automatically; a non-array run is a single shard.
 # ============================================================================
 
-REPO="${REPO:-/cluster/work/wicky/bekessel/software/genie3}"
+REPO="${REPO:-/cluster/work/wicky/containers/genie3}"
 SIF="${SIF:-/cluster/work/wicky/containers/genie3.sif}"
 CONFIG="${CONFIG:-examples/motif_scaffolding/experiment.yaml}"   # repo-relative path
 NUM_DEVICES="${NUM_DEVICES:-1}"

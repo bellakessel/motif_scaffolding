@@ -26,7 +26,7 @@ set -euo pipefail
 #   sbatch --array=0-<N-1>%20 --export=ALL,RUN_DIR=<run>,METHOD=pp1c_bb protpardelle_generate.sbatch
 # ============================================================================
 
-REPO="${REPO:-/cluster/work/wicky/bekessel/software/protpardelle-1c}"
+REPO="${REPO:-/cluster/work/wicky/containers/protpardelle-1c}"
 SIF="${SIF:-/cluster/work/wicky/containers/protpardelle.sif}"
 RUN_DIR="${RUN_DIR:?set RUN_DIR=<runs_root>/<run>}"
 METHOD="${METHOD:?set METHOD=pp1c_bb (cc58) or pp1c_aa (cc91)}"

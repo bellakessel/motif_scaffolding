@@ -37,7 +37,7 @@ except Exception as e:  # pragma: no cover - helpful message on the cluster
 WICKY = "/cluster/work/wicky"
 DEF_LIB = f"{WICKY}/bekessel/motif_library"
 DEF_RUNS_ROOT = f"{DEF_LIB}/runs"                 # benchmark runs live WITH the library, NOT in the repo
-DEF_REPO = f"{WICKY}/bekessel/software/proteina"  # source + scripts + checkpoints only
+DEF_REPO = f"{WICKY}/containers/proteina"  # source + scripts + checkpoints only
 DEF_CKPT_DIR = f"{DEF_REPO}/checkpoints"
 DEF_CKPT_NAME = "proteina_v1.7_DFS_60M_notri_motif_scaffolding.ckpt"
 METHOD = "proteina"

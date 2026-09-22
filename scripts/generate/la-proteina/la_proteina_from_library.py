@@ -32,7 +32,7 @@ except Exception as e:
 WICKY = "/cluster/work/wicky"
 DEF_LIB = f"{WICKY}/bekessel/motif_library"
 DEF_RUNS_ROOT = f"{DEF_LIB}/runs"
-DEF_REPO = f"{WICKY}/bekessel/software/la-proteina"
+DEF_REPO = f"{WICKY}/containers/la-proteina"
 METHOD = "laproteina"
 
 

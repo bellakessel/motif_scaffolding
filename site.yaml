@@ -30,21 +30,22 @@ containers:
 # All seven live in the shared store. The repo ships only the .def build recipes (containers/).
 # software/<method>/*.sif are back-compat symlinks into the store; nothing reads them by default.
 
-# Model repos: source + hydra configs + WEIGHTS. These stay under software/ — the generate sbatches
-# `cd` into them and hydra resolves configs script-relative, so they are not relocatable.
+# Model repos: source + hydra configs + WEIGHTS, one shared directory per generator in the lab store.
+# The generate sbatches take one as REPO and hydra resolves configs relative to it, so a model
+# directory is relocatable only as a whole. Each carries README_wicky.md with its provenance.
 model_repos:
-  genie3:       ${roots.work}/bekessel/software/genie3
-  proteina:     ${roots.work}/bekessel/software/proteina
-  laproteina:   ${roots.work}/bekessel/software/la-proteina
-  laproteina_uidx: ${roots.work}/bekessel/software/la-proteina-uidx
-  protpardelle: ${roots.work}/bekessel/software/protpardelle-1c
-  proteinmpnn:  ${roots.work}/bekessel/software/ProteinMPNN
+  genie3:       ${roots.work}/containers/genie3
+  proteina:     ${roots.work}/containers/proteina
+  laproteina:   ${roots.work}/containers/la-proteina
+  laproteina_uidx: ${roots.work}/containers/la-proteina-uidx
+  protpardelle: ${roots.work}/containers/protpardelle-1c
+  proteinmpnn:  ${roots.work}/containers/ProteinMPNN
 
 weights:
   rfdiffusion:  ${roots.work}/params/RFParams/Base_ckpt.pt
   af3_params:   ${roots.work}/params/af3_params
-  genie3:       ${roots.work}/bekessel/software/genie3/pretrained/v1
-  proteinmpnn:  ${roots.work}/bekessel/software/ProteinMPNN
+  genie3:       ${roots.work}/containers/genie3/pretrained/v1
+  proteinmpnn:  ${roots.work}/containers/ProteinMPNN
 
 # Motif definition — the values the published library was built with. Changing any of these
 # changes what a "motif" means, so they are recorded here rather than defaulted in code.

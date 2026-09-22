@@ -123,7 +123,7 @@ def convert(run_dir: str, nsamples: int | None) -> int:
     print(f"  outputs  : {os.path.join(gdir, 'output')}/<task>/results/")
     print("launch (existing sbatch, all problems, sample-sharded):")
     print(f"  sbatch --array=0-9%5 --export=ALL,CONFIG={exp} "
-          f"/cluster/work/wicky/bekessel/software/genie3/genie3_generate.sbatch")
+          f"<motif_benchmark>/scripts/generate/genie3/genie3_generate.sbatch")
     return n
 
 
